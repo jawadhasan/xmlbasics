@@ -1,26 +1,113 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
+using System.Xml.Serialization;
 
 namespace XmlBasicsDemo.Application
 {
     class Program
     {
         static string xmlFilePath = @"C:\test\devices.xml";
+        static string deviceXmlFilePath = @"C:\test\device.xml";
         static void Main(string[] args)
         {
+            //Part-2
 
-            //Uncomment Functions below to run the code
+            var device = new Device
+            {
+                Id = 2,
+                DeviceType = "RaspberryPi",
+                Status = "Online"
+            };
 
+            var xml = device.Serialize();
+            Console.WriteLine(xml);
+
+            var deserilizeDevice = device.DeSerialize(xml);
+            Console.WriteLine($"{deserilizeDevice.DeviceType}");
+
+
+            //SerializeExample();
+            //DeserializeExampe();
+
+
+
+            #region Part-1 Uncomment Functions below to run the code
             //CreateNewXMLDocument();
             //LoadXMLFile();
             //CreateXMLAttributeApproach();
             //QueryXML();
-
+            #endregion
 
             Console.ReadLine();
         }
 
+        //******************Part-1*****************************
+
+        public static void SerializeExample()
+        {
+            var device = new Device
+            {
+                Id = 1,
+                DeviceType = "GateWay",
+                Status = "Online"
+            };
+
+            //Serialize: .NET Object to XML
+            var deviceXML = Serialize(device);
+
+            //Write XML to File
+            WriteXMLFile(deviceXML);
+        }
+        public static void DeserializeExampe()
+        {
+            //Deserilize: XML to .NET Object
+            var deviceDeserilized = Deserialize(deviceXmlFilePath);
+
+            Console.WriteLine($"{deviceDeserilized.Id}: {deviceDeserilized.DeviceType}");
+
+        }
+
+        public static string Serialize(Device device)
+        {
+            var result = string.Empty;
+
+            //Create XMLSerializer
+            var serializer = new XmlSerializer(typeof(Device));
+
+            //Write to String
+            using(var sw = new StringWriter())
+            {
+                serializer.Serialize(sw, device);
+                result = sw.ToString();
+            }
+
+            return result;
+        }
+        public static Device Deserialize(string xmlFilePath)
+        {
+            var device = new Device();
+
+            //Create XMLSerializer
+            var serializer = new XmlSerializer(typeof(Device));
+
+            //Read From File and Deserlize to .NET Object
+            using(var fs = new FileStream(xmlFilePath, FileMode.Open))
+            {
+                device = (Device)serializer.Deserialize(fs);
+                fs.Close();
+            }
+            return device;
+        }
+        public static void WriteXMLFile(string xml)
+        {
+            //other file ops....
+            File.AppendAllText(deviceXmlFilePath, xml, Encoding.Unicode);
+        }
+
+        //******************Part-1*****************************
 
         //Example - Create NewXMLDocument using Code
         public static void CreateNewXMLDocument()
